@@ -1,0 +1,209 @@
+# WebSocket Events Contract
+
+## Connection
+**URL**: `ws://localhost:3000/socket.io`
+**Authentication**: JWT token in auth handshake
+
+## Client → Server Events
+
+### join_room
+**Purpose**: Join a chat room to receive messages
+**Payload**:
+```json
+{
+  "roomId": "uuid"
+}
+```
+**Response**:
+- `room_joined` - Success
+- `error` - Not authorized or room not found
+
+### leave_room
+**Purpose**: Leave a chat room
+**Payload**:
+```json
+{
+  "roomId": "uuid"
+}
+```
+**Response**:
+- `room_left` - Success
+
+### send_message
+**Purpose**: Send a message to a room
+**Payload**:
+```json
+{
+  "roomId": "uuid",
+  "content": "string (1-2000 chars)"
+}
+```
+**Response**:
+- `message_sent` - Success with message data
+- `error` - Validation error or not authorized
+
+### typing_start
+**Purpose**: Indicate user started typing
+**Payload**:
+```json
+{
+  "roomId": "uuid"
+}
+```
+**Response**: None (broadcast to other room participants)
+
+### typing_stop
+**Purpose**: Indicate user stopped typing
+**Payload**:
+```json
+{
+  "roomId": "uuid"
+}
+```
+**Response**: None (broadcast to other room participants)
+
+### update_presence
+**Purpose**: Update user presence status
+**Payload**:
+```json
+{
+  "status": "online|away|offline"
+}
+```
+**Response**: `presence_updated` - Broadcast to contacts
+
+## Server → Client Events
+
+### message_received
+**Purpose**: New message in a room the user is in
+**Payload**:
+```json
+{
+  "id": "uuid",
+  "content": "string",
+  "senderId": "uuid",
+  "senderUsername": "string",
+  "chatRoomId": "uuid",
+  "createdAt": "ISO8601 datetime",
+  "messageType": "text|system"
+}
+```
+
+### user_joined_room
+**Purpose**: Another user joined a room
+**Payload**:
+```json
+{
+  "roomId": "uuid",
+  "user": {
+    "id": "uuid",
+    "username": "string"
+  }
+}
+```
+
+### user_left_room
+**Purpose**: Another user left a room
+**Payload**:
+```json
+{
+  "roomId": "uuid",
+  "userId": "uuid"
+}
+```
+
+### user_typing
+**Purpose**: Another user is typing in a room
+**Payload**:
+```json
+{
+  "roomId": "uuid",
+  "userId": "uuid",
+  "username": "string",
+  "isTyping": true
+}
+```
+
+### user_stopped_typing
+**Purpose**: Another user stopped typing
+**Payload**:
+```json
+{
+  "roomId": "uuid",
+  "userId": "uuid",
+  "isTyping": false
+}
+```
+
+### presence_changed
+**Purpose**: User presence status changed
+**Payload**:
+```json
+{
+  "userId": "uuid",
+  "username": "string",
+  "status": "online|away|offline",
+  "lastSeen": "ISO8601 datetime"
+}
+```
+
+### room_joined
+**Purpose**: Confirmation of successful room join
+**Payload**:
+```json
+{
+  "roomId": "uuid",
+  "participants": [
+    {
+      "id": "uuid",
+      "username": "string",
+      "isOnline": boolean
+    }
+  ]
+}
+```
+
+### room_left
+**Purpose**: Confirmation of leaving room
+**Payload**:
+```json
+{
+  "roomId": "uuid"
+}
+```
+
+### error
+**Purpose**: Error response to client actions
+**Payload**:
+```json
+{
+  "message": "string",
+  "code": "string",
+  "details": "object (optional)"
+}
+```
+
+## Connection Management
+
+### Authentication
+- JWT token required in connection handshake
+- Token validated on connection
+- Invalid token results in connection rejection
+
+### Presence Management
+- User marked online on connection
+- Heartbeat every 30 seconds
+- User marked offline after 60 seconds without heartbeat
+- Presence status broadcast to relevant users
+
+### Room Management
+- Users automatically joined to their existing rooms on connection
+- Room-based message broadcasting
+- Typing indicators scoped to specific rooms
+- User list updates when users join/leave rooms
+
+### Error Handling
+- Connection retry logic on client
+- Message acknowledgment system
+- Graceful degradation when WebSocket unavailable
+- Rate limiting on message sending (10 messages/minute per user)

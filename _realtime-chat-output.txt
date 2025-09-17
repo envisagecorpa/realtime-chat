@@ -1,0 +1,627 @@
+╭─────────────────────────────────────────────────────╮
+│ ✻ Welcome to Claude Code!                           │
+│                                                     │
+│   /help for help, /status for your current setup    │
+│                                                     │
+│   cwd: /Users/long/_dev/spec-project/realtime-chat  │
+╰─────────────────────────────────────────────────────╯
+
+ Tips for getting started:
+
+  Use Claude to help with file analysis, editing, bash commands and git
+  Be as specific as you would with another engineer for the best results
+  ✔ Run /init to create a CLAUDE.md file with instructions for Claude
+  ✔ Run /terminal-setup to set up terminal integration
+
+> /specify is running… Real-time chat system with message history 
+and user presence
+
+⏺ I'll help you create a specification for the real-time chat
+  system. Let me start by creating a todo list and then
+  executing the required steps.
+
+⏺ Bash(.specify/scripts/bash/create-new-feature.sh --json
+      "Real-time chat system with message history and user
+      presence")
+  ⎿ {                                                         
+      "BRANCH_NAME": "001-real-time-chat",
+      "SPEC_FILE": "/Users/long/_dev/spec-project/realtime-cha
+    … +4 lines (ctrl+o to expand)
+
+
+⏺ Read(.specify/templates/spec-template.md)
+  ⎿  Read 117 lines (ctrl+o to expand)
+
+⏺ Write(specs/001-real-time-chat/spec.md)
+  ⎿  Wrote 126 lines to specs/001-real-time-chat/spec.md      
+     # Feature Specification: Real-time Chat System
+     **Feature Branch**: `001-real-time-chat`
+     **Created**: 2025-09-17
+     **Status**: Draft
+     **Input**: User description: "Real-time chat system with
+     message history and user presence"
+     ## Execution Flow (main)
+     ```
+     1. Parse user description from Input
+     … +116 lines (ctrl+o to expand)
+
+⏺ Completion Report
+
+  ✅ Feature specification created successfully
+
+  - Branch Name: 001-real-time-chat
+  - Spec File: /Users/long/_dev/spec-project/realtime-chat/spec
+  s/001-real-time-chat/spec.md
+  - Status: Ready for next phase
+
+  The specification includes core functionality for real-time
+  messaging, user presence tracking, and message history. Key
+  areas requiring clarification have been marked for
+  stakeholder input before moving to the planning phase.
+
+> /plan is running… WebSocket for real-time messaging, PostgreSQL 
+for history, Redis for presence
+
+⏺ I'll help you create an implementation plan for the real-time
+   chat system. Let me start by setting up the todo list and
+  executing the required steps.
+
+⏺ Bash(.specify/scripts/bash/setup-plan.sh --json)
+  ⎿ {                                                         
+      "FEATURE_SPEC": "/Users/long/_dev/spec-project/realtime-
+    chat/specs/001-real-time-chat/spec.md",
+    … +6 lines (ctrl+o to expand)
+
+
+⏺ Read(specs/001-real-time-chat/spec.md)
+  ⎿  Read 126 lines (ctrl+o to expand)
+
+⏺ Read(.specify/memory/constitution.md)
+  ⎿  Read 50 lines (ctrl+o to expand)
+
+⏺ Read(specs/001-real-time-chat/plan.md)
+  ⎿  Read 212 lines (ctrl+o to expand)
+
+⏺ Now I'll execute the implementation plan template according
+  to the execution flow. Let me start by updating the plan.md
+  with the specific information from the feature spec and
+  user-provided technical details.
+
+⏺ Update(specs/001-real-time-chat/plan.md)
+  ⎿  Updated specs/001-real-time-chat/plan.md with 3 additions
+     and 3 removals
+       1    
+       2 -  # Implementation Plan: [FEATURE]
+       2 +  # Implementation Plan: Real-time Chat System
+       3    
+       4 -  **Branch**: `[###-feature-name]` | **Date**: 
+         - [DATE] | **Spec**: [link]
+       5 -  **Input**: Feature specification from `/specs/
+         -  [###-feature-name]/spec.md`
+       4 +  **Branch**: `001-real-time-chat` | **Date**: 
+         + 2025-09-17 | **Spec**: [spec.md](./spec.md)
+       5 +  **Input**: Feature specification from `/specs/
+         +  001-real-time-chat/spec.md`
+       6    
+       7    ## Execution Flow (/plan command scope)
+       8    ```
+
+⏺ Update(specs/001-real-time-chat/plan.md)
+  ⎿  Updated specs/001-real-time-chat/plan.md with 1 addition 
+     and 1 removal
+       31    - Phase 3-4: Implementation execution (manual 
+            or via tools)
+       32    
+       33    ## Summary
+       34 -  [Extract from feature spec: primary requirement
+          -  + technical approach from research]
+       34 +  Real-time chat system enabling users to 
+          + send/receive messages instantly, view message 
+          + history, and see presence status of other users.
+          +  Implementation uses WebSocket for real-time 
+          + messaging, PostgreSQL for persistent message 
+          + storage, and Redis for presence tracking and 
+          + session management.
+       35    
+       36    ## Technical Context
+       37    **Language/Version**: [e.g., Python 3.11, Swift
+             5.9, Rust 1.75 or NEEDS CLARIFICATION]  
+
+⏺ Update(specs/001-real-time-chat/plan.md)
+  ⎿  Updated specs/001-real-time-chat/plan.md with 9 additions
+     and 9 removals
+       34    Real-time chat system enabling users to 
+            send/receive messages instantly, view message 
+            history, and see presence status of other users.
+             Implementation uses WebSocket for real-time 
+            messaging, PostgreSQL for persistent message 
+            storage, and Redis for presence tracking and 
+            session management.
+       35    
+       36    ## Technical Context
+       37 -  **Language/Version**: 
+          -  [e.g., Python 3.11, Swift 5.9, Rust 1.75 or 
+          -  NEEDS CLARIFICATION]  
+       38 -  **Primary Dependencies**: [e.g., FastAPI, 
+          - UIKit, LLVM or NEEDS CLARIFICATION]  
+       39 -  **Storage**: [if applicable, e.g., PostgreSQL, 
+          - CoreData, files or N/A]  
+       40 -  **Testing**: 
+          -  [e.g., pytest, XCTest, cargo test or 
+          -  NEEDS CLARIFICATION]  
+       41 -  **Target Platform**: 
+          -  [e.g., Linux server, iOS 15+, WASM or 
+          -  NEEDS CLARIFICATION]
+       42 -  **Project Type**: [single/web/mobile
+          -   - determines source structure]  
+       43 -  **Performance Goals**: [domain-specific, e.g., 
+          - 1000 req/s, 10k lines/sec, 60 fps or NEEDS 
+          - CLARIFICATION]  
+       44 -  **Constraints**: [domain-specific, e.g., <200ms
+          -  p95, <100MB memory, offline-capable or NEEDS 
+          - CLARIFICATION]  
+       45 -  **Scale/Scope**: [domain-specific, e.g., 10k 
+          - users, 1M LOC, 50 screens or NEEDS 
+          - CLARIFICATION]
+       37 +  **Language/Version**: NEEDS CLARIFICATION
+       38 +  **Primary Dependencies**: WebSocket 
+          + implementation, PostgreSQL driver, Redis client
+       39 +  **Storage**: PostgreSQL for message history, 
+          + Redis for presence/sessions
+       40 +  **Testing**: NEEDS CLARIFICATION
+       41 +  **Target Platform**: NEEDS CLARIFICATION
+       42 +  **Project Type**: web
+          +   - determines source structure
+       43 +  **Performance Goals**: NEEDS CLARIFICATION
+       44 +  **Constraints**: Real-time message delivery, 
+          + concurrent user support
+       45 +  **Scale/Scope**: NEEDS CLARIFICATION
+       46    
+       47    ## Constitution Check
+       48    *GATE: Must pass before Phase 0 research. 
+            Re-check after Phase 1 design.*
+
+⏺ Update(specs/001-real-time-chat/plan.md)
+  ⎿  Updated specs/001-real-time-chat/plan.md with 4 additions
+     and 1 removal
+       47    ## Constitution Check
+       48    *GATE: Must pass before Phase 0 research. 
+            Re-check after Phase 1 design.*
+       49    
+       50 -  [Gates determined based on constitution file]
+       50 +  Constitution file is a template with 
+          + placeholder content. No specific gates or 
+          + principles defined yet. Proceeding with standard
+          +  development practices:
+       51 +  - All functionality should be properly tested
+       52 +  - Clear separation of concerns
+       53 +  - Follow established patterns
+       54    
+       55    ## Project Structure
+       56    
+
+⏺ Update(specs/001-real-time-chat/plan.md)
+  ⎿  Updated specs/001-real-time-chat/plan.md with 1 addition 
+     and 1 removal
+       102    └── [platform-specific structure]
+       103    ```
+       104    
+       105 -  **Structure Decision**: [DEFAULT to Option 1 
+           - unless Technical Context indicates web/mobile 
+           - app]
+       105 +  **Structure Decision**: Option 2 (Web 
+           + application) - backend/frontend separation for 
+           + real-time chat system
+       106    
+       107    ## Phase 0: Outline & Research
+       108    1. **Extract unknowns from Technical Context**
+              above:
+
+⏺ Now I'll execute Phase 0 to create the research.md file.
+
+⏺ Write(specs/001-real-time-chat/research.md)
+  ⎿  Wrote 130 lines to specs/001-real-time-chat/research.md
+     # Research: Real-time Chat System
+     ## Technical Decisions
+     ### Language/Version
+     **Decision**: Node.js 18+ with TypeScript
+     **Rationale**:
+     - Excellent WebSocket support with native modules
+     - Strong typing with TypeScript for maintainability
+     - Large ecosystem for real-time applications
+     … +120 lines (ctrl+o to expand)
+
+⏺ Now I'll update the Technical Context in plan.md with the
+  resolved information and then execute Phase 1.
+
+⏺ Update(specs/001-real-time-chat/plan.md)
+  ⎿  Updated specs/001-real-time-chat/plan.md with 6 additions
+     and 6 removals
+       34    Real-time chat system enabling users to 
+            send/receive messages instantly, view message 
+            history, and see presence status of other users.
+             Implementation uses WebSocket for real-time 
+            messaging, PostgreSQL for persistent message 
+            storage, and Redis for presence tracking and 
+            session management.
+       35    
+       36    ## Technical Context
+       37 -  **Language/Version**: NEEDS CLARIFICATION
+       38 -  **Primary Dependencies**: WebSocket 
+          - implementation, PostgreSQL driver, Redis client
+       37 +  **Language/Version**: Node.js 18+ with 
+          + TypeScript
+       38 +  **Primary Dependencies**: Express.js, 
+          + Socket.IO, TypeORM, Redis client, React 18
+       39    **Storage**: PostgreSQL for message history, 
+            Redis for presence/sessions
+       40 -  **Testing**: NEEDS CLARIFICATION
+       41 -  **Target Platform**: NEEDS CLARIFICATION
+       40 +  **Testing**: Jest + Supertest (backend), Jest +
+          +  React Testing Library (frontend)
+       41 +  **Target Platform**: Modern web browsers 
+          + (Chrome 90+, Firefox 88+, Safari 14+)
+       42    **Project Type**: web - determines source 
+            structure
+       43 -  **Performance Goals**: NEEDS CLARIFICATION
+       43 +  **Performance Goals**: <100ms message delivery,
+          +  1000+ concurrent connections, <2s page load
+       44    **Constraints**: Real-time message delivery, 
+            concurrent user support
+       45 -  **Scale/Scope**: NEEDS CLARIFICATION
+       45 +  **Scale/Scope**: 100 users per room, 10k total 
+          + users, 30 days retention
+       46    
+       47    ## Constitution Check
+       48    *GATE: Must pass before Phase 0 research. 
+            Re-check after Phase 1 design.*
+
+⏺ Now I'll execute Phase 1 by creating the data model and
+  contracts.
+
+⏺ Write(specs/001-real-time-chat/data-model.md)
+  ⎿  Wrote 145 lines to specs/001-real-time-chat/data-model.md
+     # Data Model: Real-time Chat System
+     ## Core Entities
+     ### User
+     **Purpose**: Represents a person participating in chat
+     conversations
+     **Fields**:
+     - `id`: UUID - Primary key
+     - `username`: String (unique, 3-30 chars) - Display name
+     - `email`: String (unique) - Authentication identifier
+     … +135 lines (ctrl+o to expand)
+
+⏺ Now I'll create the contracts directory and API contracts.
+
+⏺ Bash(mkdir -p "/Users/long/_dev/spec-project/realtime-chat/specs/
+      001-real-time-chat/contracts")
+  ⎿  (No content)
+
+⏺ Write(specs/001-real-time-chat/contracts/api.yaml)
+  ⎿  Wrote 381 lines to                                       
+     specs/001-real-time-chat/contracts/api.yaml
+     openapi: 3.0.3
+     info:
+       title: Real-time Chat API
+       description: REST API for chat system with WebSocket
+     support
+       version: 1.0.0
+     servers:
+       - url: http://localhost:3000/api
+         description: Development server
+     … +371 lines (ctrl+o to expand)
+
+⏺ Write(specs/001-real-time-chat/contracts/websocket.yaml)
+  ⎿  Wrote 209 lines to                               
+     specs/001-real-time-chat/contracts/websocket.yaml
+     # WebSocket Events Contract
+     ## Connection
+     **URL**: `ws://localhost:3000/socket.io`
+     **Authentication**: JWT token in auth handshake
+     ## Client → Server Events
+     ### join_room
+     **Purpose**: Join a chat room to receive messages
+     … +199 lines (ctrl+o to expand)
+
+⏺ Now I'll create the quickstart.md file.
+
+⏺ Write(specs/001-real-time-chat/quickstart.md)
+  ⎿  Wrote 246 lines to specs/001-real-time-chat/quickstart.md
+     # Quickstart: Real-time Chat System
+     ## Setup & Run
+     ### Prerequisites
+     ```bash
+     # Required software
+     node --version  # v18.0.0 or higher
+     npm --version   # v8.0.0 or higher
+     docker --version  # For PostgreSQL and Redis
+     … +236 lines (ctrl+o to expand)
+
+⏺ Now I'll update the agent context file using the provided
+  script.
+
+⏺ Bash(.specify/scripts/bash/update-agent-context.sh claude)
+  ⎿  Error: sed: 1: "s/^**Language\/Version* ...": RE error: 
+     repetition-operator operand invalid
+     sed: 1: "s/^**Primary Dependenci ...": RE error: 
+     repetition-operator operand invalid
+     sed: 1: "s/^**Storage**: //": RE error: repetition-operator 
+     operand invalid
+     sed: 1: "s/^**Project Type**: //": RE error: 
+     repetition-operator operand invalid
+     cp: /Users/long/_dev/spec-project/realtime-chat/templates/agent
+     -file-template.md: No such file or directory
+
+     === Updating agent context files for feature 001-real-time-chat
+      ===
+     Updating Claude Code context file: 
+     /Users/long/_dev/spec-project/realtime-chat/CLAUDE.md
+     Creating new Claude Code context file...
+
+⏺ Let me check if there's a template file and create the
+  CLAUDE.md manually since the script has some issues.
+
+⏺ Search(pattern: "**/*template*", path: ".specify")
+  ⎿  Found 4 files (ctrl+o to expand)
+
+⏺ Read(.specify/templates/agent-file-template.md)
+  ⎿  Read 23 lines (ctrl+o to expand)
+
+⏺ Write(CLAUDE.md)
+  ⎿  Wrote 89 lines to CLAUDE.md                              
+     # Real-time Chat Development Guidelines
+     Auto-generated from all feature plans. Last updated:
+     2025-09-17
+     ## Active Technologies
+     - **Language**: Node.js 18+ with TypeScript
+     - **Backend**: Express.js, Socket.IO, TypeORM, Redis
+     client
+     - **Frontend**: React 18, Socket.IO client, TanStack Query
+     - **Database**: PostgreSQL for message history, Redis for
+     presence/sessions
+     - **Testing**: Jest + Supertest (backend), Jest + React
+     Testing Library (frontend)
+
+     … +79 lines (ctrl+o to expand)
+
+⏺ Now I'll update the Progress Tracking section in the plan.md
+  to reflect completion.
+
+⏺ Update(specs/001-real-time-chat/plan.md)
+  ⎿  Updated specs/001-real-time-chat/plan.md with 6 additions
+     and 6 removals
+       197    *This checklist is updated during execution 
+             flow*
+       198    
+       199    **Phase Status**:
+       200 -  - [ 
+           -  ] Phase 0: Research complete (/plan command)
+       201 -  - [ ] Phase 1: Design complete (/plan command)
+       202 -  - [ ] Phase 2: Task planning complete (/plan 
+           -  command - describe approach only)
+       200 +  - [x
+           +  ] Phase 0: Research complete (/plan command)
+       201 +  - [x] Phase 1: Design complete (/plan command)
+       202 +  - [x] Phase 2: Task planning complete (/plan 
+           +  command - describe approach only)
+       203    - [ ] Phase 3: Tasks generated (/tasks 
+             command)
+       204    - [ ] Phase 4: Implementation complete
+       205    - [ ] Phase 5: Validation passed
+       206    
+       207    **Gate Status**:
+       208 -  - [ ] Initial Constitution Check: PASS
+       209 -  - [ ] Post-Design Constitution Check: PASS
+       210 -  - [ ] All NEEDS CLARIFICATION resolved
+       208 +  - [x] Initial Constitution Check: PASS
+       209 +  - [x] Post-Design Constitution Check: PASS
+       210 +  - [x] All NEEDS CLARIFICATION resolved
+       211    - [ ] Complexity deviations documented
+       212    
+       213    ---
+
+⏺ Let me verify all artifacts were generated correctly.
+
+⏺ Bash(ls -la "/Users/long/_dev/spec-project/realtime-chat/specs/00
+      1-real-time-chat/")
+  ⎿  total 88                                       
+     drwxr-xr-x@ 8 long  staff   256 Sep 17 20:15 .
+     drwxr-xr-x@ 3 long  staff    96 Sep 17 20:02 ..
+     … +6 lines (ctrl+o to expand)
+
+⏺ Bash(ls -la "/Users/long/_dev/spec-project/realtime-chat/specs/00
+      1-real-time-chat/contracts/")
+  ⎿  total 32                                       
+     drwxr-xr-x@ 4 long  staff   128 Sep 17 20:13 .
+     drwxr-xr-x@ 8 long  staff   256 Sep 17 20:15 ..
+     … +3 lines (ctrl+o to expand)
+
+⏺ Bash(ls -la
+      "/Users/long/_dev/spec-project/realtime-chat/CLAUDE.md")
+  ⎿ -rw-r--r--@ 1 long  staff  3278 Sep 17 20:15 /Users/long/_
+    dev/spec-project/realtime-chat/CLAUDE.md
+
+
+⏺ Implementation Plan Completion Report
+
+  ✅ Implementation plan created successfully
+
+  - Branch: 001-real-time-chat
+  - Execution Status: Phase 0-2 complete, ready for /tasks
+  command
+
+  Generated Artifacts
+
+  Planning Documents:
+  - /specs/001-real-time-chat/plan.md - Complete implementation
+   plan
+  - /specs/001-real-time-chat/research.md - Technology
+  decisions and architecture patterns
+  - /specs/001-real-time-chat/data-model.md - Database schema
+  and entity relationships
+
+  Design Contracts:
+  - /specs/001-real-time-chat/contracts/api.yaml - REST API
+  OpenAPI specification
+  - /specs/001-real-time-chat/contracts/websocket.yaml -
+  WebSocket events contract
+
+  Testing & Validation:
+  - /specs/001-real-time-chat/quickstart.md - User scenarios
+  and validation tests
+
+  Development Context:
+  - /CLAUDE.md - Agent context file with technologies and
+  commands
+
+  Technical Stack Resolved
+
+  - Backend: Node.js 18+ with TypeScript, Express.js,
+  Socket.IO, TypeORM
+  - Frontend: React 18, Socket.IO client, TanStack Query
+  - Storage: PostgreSQL + Redis
+  - Architecture: Web application with backend/frontend
+  separation
+
+  Next Phase
+
+  Ready for /tasks command to generate detailed implementation
+  tasks from the design artifacts.
+
+> /tasks is running… 
+
+⏺ I'll generate detailed implementation tasks for the real-time
+   chat system. Let me start by creating a todo list and then
+  executing the required steps.
+
+⏺ Bash(.specify/scripts/bash/check-task-prerequisites.sh --json)
+  ⎿ {                                                         
+      "FEATURE_DIR": "/Users/long/_dev/spec-project/realtime-c
+    hat/specs/001-real-time-chat",
+    … +7 lines (ctrl+o to expand)
+
+
+⏺ Now I'll load and analyze all the available design documents:
+
+⏺ Read(specs/001-real-time-chat/plan.md)
+  ⎿  Read 50 lines (ctrl+o to expand)
+
+⏺ Read(specs/001-real-time-chat/data-model.md)
+  ⎿  Read 50 lines (ctrl+o to expand)
+
+⏺ Read(specs/001-real-time-chat/research.md)
+  ⎿  Read 50 lines (ctrl+o to expand)
+
+⏺ Read(specs/001-real-time-chat/quickstart.md)
+  ⎿  Read 50 lines (ctrl+o to expand)
+
+⏺ Now let me read the contract files and the tasks template:
+
+⏺ Read(specs/001-real-time-chat/contracts/api.yaml)
+  ⎿  Read 50 lines (ctrl+o to expand)
+
+⏺ Read(specs/001-real-time-chat/contracts/websocket.yaml)
+  ⎿  Read 50 lines (ctrl+o to expand)
+
+⏺ Read(.specify/templates/tasks-template.md)
+  ⎿  Read 127 lines (ctrl+o to expand)
+
+⏺ Now I'll generate the tasks.md file based on the analysis.
+  Let me extract the key information:
+
+  From plan.md:
+  - Project Type: Web application (backend/frontend structure)
+  - Tech Stack: Node.js 18+ TypeScript, Express.js, Socket.IO,
+  TypeORM, Redis, React 18
+
+  From data-model.md:
+  - Entities: User, ChatRoom, Message, ChatRoomParticipant,
+  PresenceStatus
+
+  From contracts:
+  - REST API endpoints: auth/register, auth/login,
+  auth/refresh, rooms, rooms/{id}, etc.
+  - WebSocket events: join_room, leave_room, send_message,
+  typing_start, etc.
+
+  From quickstart.md:
+  - User scenarios: Registration/login, Create room, Real-time
+  messaging, Presence, Message history, Typing indicators
+
+⏺ Write(specs/001-real-time-chat/tasks.md)
+  ⎿  Wrote 235 lines to specs/001-real-time-chat/tasks.md     
+     # Tasks: Real-time Chat System
+     **Input**: Design documents from
+     `/specs/001-real-time-chat/`
+     **Prerequisites**: plan.md (required), research.md,
+     data-model.md, contracts/
+     ## Execution Flow (main)
+     ```
+     1. Load plan.md from feature directory
+        → If not found: ERROR "No implementation plan found"
+        → Extract: tech stack, libraries, structure
+     … +225 lines (ctrl+o to expand)
+
+⏺ Now let me update the progress tracking in the plan.md to
+  reflect that Phase 2 is complete:
+
+⏺ Update(specs/001-real-time-chat/plan.md)
+  ⎿  Updated specs/001-real-time-chat/plan.md with 1 addition 
+     and 1 removal
+       200    - [x] Phase 0: Research complete (/plan 
+             command)
+       201    - [x] Phase 1: Design complete (/plan command)
+       202    - [x] Phase 2: Task planning complete (/plan 
+             command - describe approach only)
+       203 -  - [ 
+           -  ] Phase 3: Tasks generated (/tasks command)
+       203 +  - [x
+           +  ] Phase 3: Tasks generated (/tasks command)
+       204    - [ ] Phase 4: Implementation complete
+       205    - [ ] Phase 5: Validation passed
+       206    
+
+⏺ Tasks Generation Complete
+
+  ✅ Implementation tasks created successfully
+
+  Generated Artifact
+
+  - File: /specs/001-real-time-chat/tasks.md
+  - Total Tasks: 80 numbered tasks (T001-T080)
+  - Structure: 5 phases with proper dependencies
+
+  Task Breakdown
+
+  - Setup (T001-T007): Project initialization, dependencies,
+  linting
+  - Tests (T008-T027): Contract tests and integration tests
+  (TDD approach)
+  - Core Implementation (T028-T058): Models, services,
+  controllers, components
+  - Integration (T059-T069): Database connections, middleware,
+  frontend integration
+  - Polish (T070-T080): Unit tests, performance tests,
+  documentation
+
+  Key Features
+
+  - Parallel Execution: 45 tasks marked [P] for concurrent
+  execution
+  - TDD Compliance: All tests written before implementation
+  - Exact File Paths: Every task specifies precise file
+  locations
+  - Dependency Management: Clear blocking relationships defined
+  - WebSocket Integration: Complete real-time functionality
+  coverage
+
+  Execution Examples
+
+  Tasks include specific parallel execution examples showing
+  how to launch multiple independent tasks simultaneously,
+  optimizing development velocity while maintaining code
+  quality.
+
+  Status: Ready for Phase 4 implementation execution
+
