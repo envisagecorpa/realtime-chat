@@ -1,0 +1,786 @@
+asyncapi: 3.0.0
+
+info:
+  title: Real-time Chat System WebSocket API
+  version: 1.0.0
+  description: WebSocket events for real-time messaging, presence tracking, and typing indicators
+  contact:
+    name: Chat System WebSocket API
+
+servers:
+  development:
+    host: localhost:3001
+    protocol: ws
+    description: Development WebSocket server
+  production:
+    host: chat-ws.example.com
+    protocol: wss
+    description: Production WebSocket server (secure)
+
+defaultContentType: application/json
+
+channels:
+  connection:
+    description: WebSocket connection management
+    messages:
+      connect:
+        $ref: '#/components/messages/connect'
+      disconnect:
+        $ref: '#/components/messages/disconnect'
+      error:
+        $ref: '#/components/messages/error'
+
+  messaging:
+    description: Real-time message exchange
+    messages:
+      message_send:
+        $ref: '#/components/messages/message_send'
+      message_received:
+        $ref: '#/components/messages/message_received'
+      message_edited:
+        $ref: '#/components/messages/message_edited'
+      message_deleted:
+        $ref: '#/components/messages/message_deleted'
+      message_delivered:
+        $ref: '#/components/messages/message_delivered'
+      message_read:
+        $ref: '#/components/messages/message_read'
+
+  presence:
+    description: User presence and activity status
+    messages:
+      user_presence_update:
+        $ref: '#/components/messages/user_presence_update'
+      user_online:
+        $ref: '#/components/messages/user_online'
+      user_offline:
+        $ref: '#/components/messages/user_offline'
+      typing_start:
+        $ref: '#/components/messages/typing_start'
+      typing_stop:
+        $ref: '#/components/messages/typing_stop'
+      user_typing:
+        $ref: '#/components/messages/user_typing'
+
+  rooms:
+    description: Chat room management
+    messages:
+      room_join:
+        $ref: '#/components/messages/room_join'
+      room_leave:
+        $ref: '#/components/messages/room_leave'
+      room_joined:
+        $ref: '#/components/messages/room_joined'
+      room_left:
+        $ref: '#/components/messages/room_left'
+      user_joined_room:
+        $ref: '#/components/messages/user_joined_room'
+      user_left_room:
+        $ref: '#/components/messages/user_left_room'
+
+  files:
+    description: File upload and sharing events
+    messages:
+      file_upload_start:
+        $ref: '#/components/messages/file_upload_start'
+      file_upload_progress:
+        $ref: '#/components/messages/file_upload_progress'
+      file_upload_complete:
+        $ref: '#/components/messages/file_upload_complete'
+      file_upload_error:
+        $ref: '#/components/messages/file_upload_error'
+      file_shared:
+        $ref: '#/components/messages/file_shared'
+
+operations:
+  # Client to Server Events
+  sendMessage:
+    action: send
+    channel:
+      $ref: '#/channels/messaging'
+    messages:
+      - $ref: '#/components/messages/message_send'
+
+  joinRoom:
+    action: send
+    channel:
+      $ref: '#/channels/rooms'
+    messages:
+      - $ref: '#/components/messages/room_join'
+
+  leaveRoom:
+    action: send
+    channel:
+      $ref: '#/channels/rooms'
+    messages:
+      - $ref: '#/components/messages/room_leave'
+
+  startTyping:
+    action: send
+    channel:
+      $ref: '#/channels/presence'
+    messages:
+      - $ref: '#/components/messages/typing_start'
+
+  stopTyping:
+    action: send
+    channel:
+      $ref: '#/channels/presence'
+    messages:
+      - $ref: '#/components/messages/typing_stop'
+
+  # Server to Client Events
+  receiveMessage:
+    action: receive
+    channel:
+      $ref: '#/channels/messaging'
+    messages:
+      - $ref: '#/components/messages/message_received'
+
+  receivePresenceUpdate:
+    action: receive
+    channel:
+      $ref: '#/channels/presence'
+    messages:
+      - $ref: '#/components/messages/user_presence_update'
+
+  receiveTypingIndicator:
+    action: receive
+    channel:
+      $ref: '#/channels/presence'
+    messages:
+      - $ref: '#/components/messages/user_typing'
+
+components:
+  messages:
+    # Connection Management
+    connect:
+      name: connect
+      title: WebSocket Connection Established
+      description: Client establishes WebSocket connection with authentication
+      payload:
+        $ref: '#/components/schemas/ConnectPayload'
+
+    disconnect:
+      name: disconnect
+      title: WebSocket Connection Closed
+      description: Client or server closes WebSocket connection
+      payload:
+        $ref: '#/components/schemas/DisconnectPayload'
+
+    error:
+      name: error
+      title: WebSocket Error
+      description: Error occurred during WebSocket communication
+      payload:
+        $ref: '#/components/schemas/ErrorPayload'
+
+    # Messaging Events
+    message_send:
+      name: message_send
+      title: Send Message
+      description: Client sends a new message to a chat room
+      payload:
+        $ref: '#/components/schemas/MessageSendPayload'
+
+    message_received:
+      name: message_received
+      title: Message Received
+      description: Server broadcasts new message to room participants
+      payload:
+        $ref: '#/components/schemas/MessageReceivedPayload'
+
+    message_edited:
+      name: message_edited
+      title: Message Edited
+      description: Server notifies room participants of message edit
+      payload:
+        $ref: '#/components/schemas/MessageEditedPayload'
+
+    message_deleted:
+      name: message_deleted
+      title: Message Deleted
+      description: Server notifies room participants of message deletion
+      payload:
+        $ref: '#/components/schemas/MessageDeletedPayload'
+
+    message_delivered:
+      name: message_delivered
+      title: Message Delivered
+      description: Server confirms message delivery to recipient
+      payload:
+        $ref: '#/components/schemas/MessageDeliveredPayload'
+
+    message_read:
+      name: message_read
+      title: Message Read
+      description: Server notifies sender when message is read
+      payload:
+        $ref: '#/components/schemas/MessageReadPayload'
+
+    # Presence Events
+    user_presence_update:
+      name: user_presence_update
+      title: User Presence Update
+      description: Server broadcasts user presence status changes
+      payload:
+        $ref: '#/components/schemas/PresenceUpdatePayload'
+
+    user_online:
+      name: user_online
+      title: User Came Online
+      description: Server notifies when user comes online
+      payload:
+        $ref: '#/components/schemas/UserOnlinePayload'
+
+    user_offline:
+      name: user_offline
+      title: User Went Offline
+      description: Server notifies when user goes offline
+      payload:
+        $ref: '#/components/schemas/UserOfflinePayload'
+
+    typing_start:
+      name: typing_start
+      title: Start Typing
+      description: Client indicates user started typing in a room
+      payload:
+        $ref: '#/components/schemas/TypingStartPayload'
+
+    typing_stop:
+      name: typing_stop
+      title: Stop Typing
+      description: Client indicates user stopped typing in a room
+      payload:
+        $ref: '#/components/schemas/TypingStopPayload'
+
+    user_typing:
+      name: user_typing
+      title: User Typing Indicator
+      description: Server broadcasts typing indicators to room participants
+      payload:
+        $ref: '#/components/schemas/UserTypingPayload'
+
+    # Room Management Events
+    room_join:
+      name: room_join
+      title: Join Room
+      description: Client requests to join a chat room
+      payload:
+        $ref: '#/components/schemas/RoomJoinPayload'
+
+    room_leave:
+      name: room_leave
+      title: Leave Room
+      description: Client requests to leave a chat room
+      payload:
+        $ref: '#/components/schemas/RoomLeavePayload'
+
+    room_joined:
+      name: room_joined
+      title: Room Joined
+      description: Server confirms client joined room and provides room state
+      payload:
+        $ref: '#/components/schemas/RoomJoinedPayload'
+
+    room_left:
+      name: room_left
+      title: Room Left
+      description: Server confirms client left room
+      payload:
+        $ref: '#/components/schemas/RoomLeftPayload'
+
+    user_joined_room:
+      name: user_joined_room
+      title: User Joined Room
+      description: Server notifies room participants when new user joins
+      payload:
+        $ref: '#/components/schemas/UserJoinedRoomPayload'
+
+    user_left_room:
+      name: user_left_room
+      title: User Left Room
+      description: Server notifies room participants when user leaves
+      payload:
+        $ref: '#/components/schemas/UserLeftRoomPayload'
+
+    # File Upload Events
+    file_upload_start:
+      name: file_upload_start
+      title: File Upload Started
+      description: Client notifies room of file upload initiation
+      payload:
+        $ref: '#/components/schemas/FileUploadStartPayload'
+
+    file_upload_progress:
+      name: file_upload_progress
+      title: File Upload Progress
+      description: Server broadcasts file upload progress to room
+      payload:
+        $ref: '#/components/schemas/FileUploadProgressPayload'
+
+    file_upload_complete:
+      name: file_upload_complete
+      title: File Upload Complete
+      description: Server notifies of completed file upload
+      payload:
+        $ref: '#/components/schemas/FileUploadCompletePayload'
+
+    file_upload_error:
+      name: file_upload_error
+      title: File Upload Error
+      description: Server notifies of file upload failure
+      payload:
+        $ref: '#/components/schemas/FileUploadErrorPayload'
+
+    file_shared:
+      name: file_shared
+      title: File Shared
+      description: Server broadcasts file attachment to room participants
+      payload:
+        $ref: '#/components/schemas/FileSharedPayload'
+
+  schemas:
+    # Base Types
+    User:
+      type: object
+      required: [id, username, role]
+      properties:
+        id:
+          type: string
+          format: uuid
+        username:
+          type: string
+        displayName:
+          type: string
+        role:
+          type: string
+          enum: [member, moderator]
+        isOnline:
+          type: boolean
+
+    Room:
+      type: object
+      required: [id, name, type]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        type:
+          type: string
+          enum: [direct, group, public]
+        participantCount:
+          type: integer
+
+    Message:
+      type: object
+      required: [id, content, sender, chatRoomId, messageType, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        content:
+          type: string
+        messageType:
+          type: string
+          enum: [text, system, file_attachment]
+        sender:
+          $ref: '#/components/schemas/User'
+        chatRoomId:
+          type: string
+          format: uuid
+        parentMessageId:
+          type: string
+          format: uuid
+        hasAttachments:
+          type: boolean
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/FileAttachment'
+        createdAt:
+          type: string
+          format: date-time
+        editedAt:
+          type: string
+          format: date-time
+
+    FileAttachment:
+      type: object
+      required: [id, originalName, mimeType, fileSize, publicUrl]
+      properties:
+        id:
+          type: string
+          format: uuid
+        originalName:
+          type: string
+        mimeType:
+          type: string
+        fileSize:
+          type: integer
+        publicUrl:
+          type: string
+          format: uri
+
+    # Connection Payloads
+    ConnectPayload:
+      type: object
+      required: [token]
+      properties:
+        token:
+          type: string
+          description: JWT authentication token
+        deviceInfo:
+          type: object
+          properties:
+            device:
+              type: string
+            browser:
+              type: string
+            os:
+              type: string
+
+    DisconnectPayload:
+      type: object
+      properties:
+        reason:
+          type: string
+          enum: [client_disconnect, server_shutdown, authentication_error, heartbeat_timeout]
+        code:
+          type: integer
+
+    ErrorPayload:
+      type: object
+      required: [error, message]
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        code:
+          type: integer
+
+    # Message Payloads
+    MessageSendPayload:
+      type: object
+      required: [content, chatRoomId, messageType]
+      properties:
+        content:
+          type: string
+          maxLength: 2000
+        chatRoomId:
+          type: string
+          format: uuid
+        messageType:
+          type: string
+          enum: [text, system]
+          default: text
+        parentMessageId:
+          type: string
+          format: uuid
+        tempId:
+          type: string
+          description: Client-generated temporary ID for optimistic updates
+
+    MessageReceivedPayload:
+      type: object
+      required: [message]
+      properties:
+        message:
+          $ref: '#/components/schemas/Message'
+        tempId:
+          type: string
+          description: Matches client tempId if message was sent by this client
+
+    MessageEditedPayload:
+      type: object
+      required: [messageId, content, editedAt]
+      properties:
+        messageId:
+          type: string
+          format: uuid
+        content:
+          type: string
+        editedAt:
+          type: string
+          format: date-time
+        editedBy:
+          $ref: '#/components/schemas/User'
+
+    MessageDeletedPayload:
+      type: object
+      required: [messageId, deletedAt]
+      properties:
+        messageId:
+          type: string
+          format: uuid
+        deletedAt:
+          type: string
+          format: date-time
+        deletedBy:
+          $ref: '#/components/schemas/User'
+
+    MessageDeliveredPayload:
+      type: object
+      required: [messageId, userId]
+      properties:
+        messageId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        deliveredAt:
+          type: string
+          format: date-time
+
+    MessageReadPayload:
+      type: object
+      required: [messageId, userId]
+      properties:
+        messageId:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        readAt:
+          type: string
+          format: date-time
+
+    # Presence Payloads
+    PresenceUpdatePayload:
+      type: object
+      required: [userId, status]
+      properties:
+        userId:
+          type: string
+          format: uuid
+        user:
+          $ref: '#/components/schemas/User'
+        status:
+          type: string
+          enum: [online, away, offline]
+        lastSeen:
+          type: string
+          format: date-time
+
+    UserOnlinePayload:
+      type: object
+      required: [user]
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        connectedAt:
+          type: string
+          format: date-time
+
+    UserOfflinePayload:
+      type: object
+      required: [userId]
+      properties:
+        userId:
+          type: string
+          format: uuid
+        user:
+          $ref: '#/components/schemas/User'
+        lastSeen:
+          type: string
+          format: date-time
+
+    TypingStartPayload:
+      type: object
+      required: [chatRoomId]
+      properties:
+        chatRoomId:
+          type: string
+          format: uuid
+
+    TypingStopPayload:
+      type: object
+      required: [chatRoomId]
+      properties:
+        chatRoomId:
+          type: string
+          format: uuid
+
+    UserTypingPayload:
+      type: object
+      required: [userId, chatRoomId, isTyping]
+      properties:
+        userId:
+          type: string
+          format: uuid
+        user:
+          $ref: '#/components/schemas/User'
+        chatRoomId:
+          type: string
+          format: uuid
+        isTyping:
+          type: boolean
+        timestamp:
+          type: string
+          format: date-time
+
+    # Room Management Payloads
+    RoomJoinPayload:
+      type: object
+      required: [chatRoomId]
+      properties:
+        chatRoomId:
+          type: string
+          format: uuid
+
+    RoomLeavePayload:
+      type: object
+      required: [chatRoomId]
+      properties:
+        chatRoomId:
+          type: string
+          format: uuid
+
+    RoomJoinedPayload:
+      type: object
+      required: [room, participants, onlineUsers]
+      properties:
+        room:
+          $ref: '#/components/schemas/Room'
+        participants:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+        onlineUsers:
+          type: array
+          items:
+            type: string
+            format: uuid
+        unreadCount:
+          type: integer
+        lastReadMessageId:
+          type: string
+          format: uuid
+
+    RoomLeftPayload:
+      type: object
+      required: [chatRoomId]
+      properties:
+        chatRoomId:
+          type: string
+          format: uuid
+
+    UserJoinedRoomPayload:
+      type: object
+      required: [user, chatRoomId]
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        chatRoomId:
+          type: string
+          format: uuid
+        joinedAt:
+          type: string
+          format: date-time
+
+    UserLeftRoomPayload:
+      type: object
+      required: [userId, chatRoomId]
+      properties:
+        userId:
+          type: string
+          format: uuid
+        user:
+          $ref: '#/components/schemas/User'
+        chatRoomId:
+          type: string
+          format: uuid
+        leftAt:
+          type: string
+          format: date-time
+
+    # File Upload Payloads
+    FileUploadStartPayload:
+      type: object
+      required: [fileName, fileSize, chatRoomId]
+      properties:
+        fileName:
+          type: string
+        fileSize:
+          type: integer
+          maximum: 10485760  # 10MB
+        chatRoomId:
+          type: string
+          format: uuid
+        uploadId:
+          type: string
+          description: Unique upload session identifier
+
+    FileUploadProgressPayload:
+      type: object
+      required: [uploadId, userId, progress]
+      properties:
+        uploadId:
+          type: string
+        userId:
+          type: string
+          format: uuid
+        user:
+          $ref: '#/components/schemas/User'
+        fileName:
+          type: string
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+        chatRoomId:
+          type: string
+          format: uuid
+
+    FileUploadCompletePayload:
+      type: object
+      required: [fileId, chatRoomId]
+      properties:
+        fileId:
+          type: string
+          format: uuid
+        file:
+          $ref: '#/components/schemas/FileAttachment'
+        chatRoomId:
+          type: string
+          format: uuid
+        uploadedBy:
+          $ref: '#/components/schemas/User'
+
+    FileUploadErrorPayload:
+      type: object
+      required: [uploadId, error]
+      properties:
+        uploadId:
+          type: string
+        error:
+          type: string
+        message:
+          type: string
+        chatRoomId:
+          type: string
+          format: uuid
+
+    FileSharedPayload:
+      type: object
+      required: [message]
+      properties:
+        message:
+          $ref: '#/components/schemas/Message'
+        file:
+          $ref: '#/components/schemas/FileAttachment'
+
+  # Security Schemes
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - jwtAuth: []
