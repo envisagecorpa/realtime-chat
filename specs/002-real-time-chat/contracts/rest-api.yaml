@@ -1,0 +1,909 @@
+openapi: 3.0.3
+info:
+  title: Real-time Chat System REST API
+  description: REST API endpoints for user management, chat rooms, and file handling
+  version: 1.0.0
+  contact:
+    name: Chat System API
+
+servers:
+  - url: http://localhost:3001/api
+    description: Development server
+  - url: https://chat-api.example.com/api
+    description: Production server
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      required: [id, username, role, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        username:
+          type: string
+          minLength: 3
+          maxLength: 50
+          pattern: '^[a-zA-Z0-9_]+$'
+        displayName:
+          type: string
+          maxLength: 100
+          nullable: true
+        email:
+          type: string
+          format: email
+          nullable: true
+        role:
+          type: string
+          enum: [member, moderator]
+        isOnline:
+          type: boolean
+        lastSeen:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    ChatRoom:
+      type: object
+      required: [id, name, type, createdBy, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          maxLength: 100
+        type:
+          type: string
+          enum: [direct, group, public]
+        description:
+          type: string
+          maxLength: 500
+          nullable: true
+        isActive:
+          type: boolean
+        maxParticipants:
+          type: integer
+          minimum: 2
+          maximum: 500
+        participantCount:
+          type: integer
+        createdBy:
+          $ref: '#/components/schemas/User'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Message:
+      type: object
+      required: [id, senderId, chatRoomId, messageType, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        content:
+          type: string
+          maxLength: 2000
+        messageType:
+          type: string
+          enum: [text, system, file_attachment]
+        sender:
+          $ref: '#/components/schemas/User'
+        chatRoomId:
+          type: string
+          format: uuid
+        parentMessageId:
+          type: string
+          format: uuid
+          nullable: true
+        deliveryStatus:
+          type: string
+          enum: [sent, delivered, failed]
+        deliveredAt:
+          type: string
+          format: date-time
+          nullable: true
+        editedAt:
+          type: string
+          format: date-time
+          nullable: true
+        hasAttachments:
+          type: boolean
+        attachments:
+          type: array
+          items:
+            $ref: '#/components/schemas/FileAttachment'
+        createdAt:
+          type: string
+          format: date-time
+
+    FileAttachment:
+      type: object
+      required: [id, originalName, mimeType, fileSize, uploadStatus]
+      properties:
+        id:
+          type: string
+          format: uuid
+        originalName:
+          type: string
+          maxLength: 255
+        sanitizedName:
+          type: string
+        mimeType:
+          type: string
+        fileSize:
+          type: integer
+          minimum: 1
+          maximum: 10485760  # 10MB
+        publicUrl:
+          type: string
+          format: uri
+          nullable: true
+        uploadStatus:
+          type: string
+          enum: [pending, processing, completed, failed]
+        uploadedBy:
+          $ref: '#/components/schemas/User'
+        createdAt:
+          type: string
+          format: date-time
+
+    ChatRoomParticipant:
+      type: object
+      required: [userId, role, joinedAt]
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        role:
+          type: string
+          enum: [member, admin]
+        joinedAt:
+          type: string
+          format: date-time
+        lastReadMessageId:
+          type: string
+          format: uuid
+          nullable: true
+        notificationLevel:
+          type: string
+          enum: [all, mentions, none]
+        isMuted:
+          type: boolean
+
+    ApiError:
+      type: object
+      required: [error, message]
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
+
+    PaginationMeta:
+      type: object
+      required: [page, limit, total, totalPages]
+      properties:
+        page:
+          type: integer
+          minimum: 1
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+        total:
+          type: integer
+        totalPages:
+          type: integer
+        hasNext:
+          type: boolean
+        hasPrev:
+          type: boolean
+
+paths:
+  /auth/login:
+    post:
+      summary: User authentication via username
+      tags: [Authentication]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username]
+              properties:
+                username:
+                  type: string
+                  minLength: 3
+                  maxLength: 50
+                displayName:
+                  type: string
+                  maxLength: 100
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [user, token]
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  token:
+                    type: string
+        '400':
+          description: Invalid username format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /auth/me:
+    get:
+      summary: Get current user profile
+      tags: [Authentication]
+      responses:
+        '200':
+          description: User profile retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /users:
+    get:
+      summary: List users with optional search
+      tags: [Users]
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+            maxLength: 100
+          description: Search by username or display name
+        - name: online
+          in: query
+          schema:
+            type: boolean
+          description: Filter by online status
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Users retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+
+  /users/{userId}:
+    get:
+      summary: Get user by ID
+      tags: [Users]
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: User retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+    patch:
+      summary: Update user profile
+      tags: [Users]
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                displayName:
+                  type: string
+                  maxLength: 100
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: User updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '403':
+          description: Cannot update other users
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /rooms:
+    get:
+      summary: List user's chat rooms
+      tags: [Chat Rooms]
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [direct, group, public]
+        - name: active
+          in: query
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: Chat rooms retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChatRoom'
+
+    post:
+      summary: Create new chat room
+      tags: [Chat Rooms]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, type]
+              properties:
+                name:
+                  type: string
+                  maxLength: 100
+                type:
+                  type: string
+                  enum: [group, public]
+                description:
+                  type: string
+                  maxLength: 500
+                maxParticipants:
+                  type: integer
+                  minimum: 2
+                  maximum: 500
+                  default: 100
+      responses:
+        '201':
+          description: Chat room created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatRoom'
+        '400':
+          description: Invalid room data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /rooms/{roomId}:
+    get:
+      summary: Get chat room details
+      tags: [Chat Rooms]
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Chat room retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatRoom'
+        '403':
+          description: Not a room participant
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+    patch:
+      summary: Update chat room
+      tags: [Chat Rooms]
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  maxLength: 100
+                description:
+                  type: string
+                  maxLength: 500
+                maxParticipants:
+                  type: integer
+                  minimum: 2
+                  maximum: 500
+      responses:
+        '200':
+          description: Chat room updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatRoom'
+        '403':
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /rooms/{roomId}/participants:
+    get:
+      summary: List room participants
+      tags: [Chat Rooms]
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Participants retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChatRoomParticipant'
+
+    post:
+      summary: Add participant to room
+      tags: [Chat Rooms]
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId]
+              properties:
+                userId:
+                  type: string
+                  format: uuid
+                role:
+                  type: string
+                  enum: [member, admin]
+                  default: member
+      responses:
+        '201':
+          description: Participant added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatRoomParticipant'
+        '409':
+          description: User already in room or room full
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /rooms/{roomId}/participants/{userId}:
+    delete:
+      summary: Remove participant from room
+      tags: [Chat Rooms]
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Participant removed
+        '403':
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /rooms/{roomId}/messages:
+    get:
+      summary: Get room message history
+      tags: [Messages]
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: before
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: Get messages before this timestamp
+        - name: after
+          in: query
+          schema:
+            type: string
+            format: date-time
+          description: Get messages after this timestamp
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: Messages retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, hasMore]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Message'
+                  hasMore:
+                    type: boolean
+                  nextCursor:
+                    type: string
+                    format: date-time
+
+  /messages/{messageId}:
+    patch:
+      summary: Edit message content
+      tags: [Messages]
+      parameters:
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [content]
+              properties:
+                content:
+                  type: string
+                  maxLength: 2000
+      responses:
+        '200':
+          description: Message updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '403':
+          description: Cannot edit message (not sender or time limit exceeded)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+    delete:
+      summary: Delete message
+      tags: [Messages]
+      parameters:
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Message deleted
+        '403':
+          description: Cannot delete message
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /messages/{messageId}/read:
+    post:
+      summary: Mark message as read
+      tags: [Messages]
+      parameters:
+        - name: messageId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Message marked as read
+        '404':
+          description: Message not found or not accessible
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /files/upload:
+    post:
+      summary: Upload file attachment (tus.io resumable upload endpoint)
+      tags: [File Upload]
+      parameters:
+        - name: Upload-Length
+          in: header
+          required: true
+          schema:
+            type: integer
+            maximum: 10485760  # 10MB
+        - name: Upload-Metadata
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Base64 encoded metadata (filename, filetype, roomId)
+        - name: Tus-Resumable
+          in: header
+          required: true
+          schema:
+            type: string
+            enum: ["1.0.0"]
+      responses:
+        '201':
+          description: Upload created
+          headers:
+            Upload-Offset:
+              schema:
+                type: integer
+            Location:
+              schema:
+                type: string
+                format: uri
+        '400':
+          description: Invalid upload request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '413':
+          description: File too large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /files/{fileId}:
+    get:
+      summary: Download file attachment
+      tags: [File Upload]
+      parameters:
+        - name: fileId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: File content
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+            Content-Type:
+              schema:
+                type: string
+        '404':
+          description: File not found or expired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /admin/users/{userId}/block:
+    post:
+      summary: Block user (moderator only)
+      tags: [Moderation]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason:
+                  type: string
+                  maxLength: 500
+                duration:
+                  type: integer
+                  description: Block duration in minutes (null for permanent)
+      responses:
+        '204':
+          description: User blocked
+        '403':
+          description: Insufficient permissions (moderator required)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+
+  /admin/reports:
+    get:
+      summary: Get user reports (moderator only)
+      tags: [Moderation]
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, resolved, dismissed]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+      responses:
+        '200':
+          description: Reports retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, meta]
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      required: [id, reportedUser, reportedBy, reason, createdAt]
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                        reportedUser:
+                          $ref: '#/components/schemas/User'
+                        reportedBy:
+                          $ref: '#/components/schemas/User'
+                        reason:
+                          type: string
+                        status:
+                          type: string
+                          enum: [pending, resolved, dismissed]
+                        createdAt:
+                          type: string
+                          format: date-time
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '403':
+          description: Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
