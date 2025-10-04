@@ -1,0 +1,612 @@
+# Socket.IO Event Contracts
+# Real-Time Chat System
+# Date: 2025-10-04
+
+version: "1.0.0"
+description: "WebSocket event contracts for real-time chat using Socket.IO"
+
+# ===================================================================
+# Client → Server Events (Client emits, Server listens)
+# ===================================================================
+
+events:
+  # Authentication
+  authenticate:
+    direction: client_to_server
+    description: "Authenticate user with username (no password required per FR-010)"
+    payload:
+      type: object
+      required: [username]
+      properties:
+        username:
+          type: string
+          pattern: "^[a-zA-Z0-9_]{3,20}$"
+          description: "Alphanumeric username, 3-20 characters"
+    response:
+      success:
+        event: authenticated
+        payload:
+          type: object
+          properties:
+            username:
+              type: string
+            userId:
+              type: integer
+      error:
+        event: auth_error
+        payload:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Username already taken"
+
+  # Room Management
+  join_room:
+    direction: client_to_server
+    description: "Join a chat room (auto-leaves current room per FR-017, FR-018)"
+    payload:
+      type: object
+      required: [roomId]
+      properties:
+        roomId:
+          type: integer
+          description: "Room ID to join"
+    response:
+      success:
+        event: room_joined
+        payload:
+          type: object
+          properties:
+            roomId:
+              type: integer
+            roomName:
+              type: string
+            users:
+              type: array
+              items:
+                type: string
+              description: "List of usernames currently in room"
+            messages:
+              type: array
+              items:
+                $ref: "#/components/schemas/Message"
+              description: "Message history (paginated, default 50 messages)"
+      error:
+        event: join_room_error
+        payload:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Room not found"
+
+  leave_room:
+    direction: client_to_server
+    description: "Explicitly leave current room"
+    payload:
+      type: object
+      required: [roomId]
+      properties:
+        roomId:
+          type: integer
+    response:
+      success:
+        event: room_left
+        payload:
+          type: object
+          properties:
+            roomId:
+              type: integer
+
+  create_room:
+    direction: client_to_server
+    description: "Create a new chat room (FR-015)"
+    payload:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          pattern: "^[a-zA-Z0-9_-]{3,50}$"
+          description: "Room name, 3-50 characters, alphanumeric + hyphen/underscore"
+    response:
+      success:
+        event: room_created
+        payload:
+          type: object
+          properties:
+            roomId:
+              type: integer
+            name:
+              type: string
+      error:
+        event: create_room_error
+        payload:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Room name already exists"
+
+  delete_room:
+    direction: client_to_server
+    description: "Delete a room (FR-015; only creator or admin can delete)"
+    payload:
+      type: object
+      required: [roomId]
+      properties:
+        roomId:
+          type: integer
+    response:
+      success:
+        event: room_deleted
+        payload:
+          type: object
+          properties:
+            roomId:
+              type: integer
+      error:
+        event: delete_room_error
+        payload:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Unauthorized to delete room"
+
+  # Messaging
+  send_message:
+    direction: client_to_server
+    description: "Send a message to current room (FR-001)"
+    payload:
+      type: object
+      required: [content, timestamp]
+      properties:
+        content:
+          type: string
+          minLength: 1
+          maxLength: 2000
+          description: "Message content"
+        timestamp:
+          type: integer
+          description: "Client-provided Unix timestamp (milliseconds) for message ordering (FR-008)"
+    response:
+      success:
+        event: message_sent
+        payload:
+          type: object
+          properties:
+            messageId:
+              type: integer
+            timestamp:
+              type: integer
+            deliveryStatus:
+              type: string
+              enum: [pending, sent]
+      error:
+        event: send_message_error
+        payload:
+          type: object
+          properties:
+            message:
+              type: string
+              example: "Message too long (max 2000 characters)"
+            retryCount:
+              type: integer
+              description: "Number of retry attempts (max 3 per FR-019)"
+
+  # Pagination
+  load_messages:
+    direction: client_to_server
+    description: "Load message history with pagination (FR-020)"
+    payload:
+      type: object
+      required: [roomId]
+      properties:
+        roomId:
+          type: integer
+        page:
+          type: integer
+          default: 1
+          minimum: 1
+        pageSize:
+          type: integer
+          enum: [50, 100, 200, 500]
+          default: 50
+    response:
+      success:
+        event: messages_loaded
+        payload:
+          type: object
+          properties:
+            roomId:
+              type: integer
+            messages:
+              type: array
+              items:
+                $ref: "#/components/schemas/Message"
+            page:
+              type: integer
+            pageSize:
+              type: integer
+            totalMessages:
+              type: integer
+            hasMore:
+              type: boolean
+
+# ===================================================================
+# Server → Client Events (Server emits, Client listens)
+# ===================================================================
+
+  # Authentication Response
+  authenticated:
+    direction: server_to_client
+    description: "Confirm successful authentication"
+    payload:
+      type: object
+      properties:
+        username:
+          type: string
+        userId:
+          type: integer
+
+  auth_error:
+    direction: server_to_client
+    description: "Authentication failed"
+    payload:
+      type: object
+      properties:
+        message:
+          type: string
+
+  # Room Broadcasts
+  room_joined:
+    direction: server_to_client
+    description: "Broadcast when current user joins a room"
+    payload:
+      type: object
+      properties:
+        roomId:
+          type: integer
+        roomName:
+          type: string
+        users:
+          type: array
+          items:
+            type: string
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/Message"
+
+  user_joined:
+    direction: server_to_client
+    description: "Broadcast to room when another user joins (FR-005)"
+    payload:
+      type: object
+      properties:
+        roomId:
+          type: integer
+        username:
+          type: string
+        users:
+          type: array
+          items:
+            type: string
+          description: "Updated list of users in room"
+
+  user_left:
+    direction: server_to_client
+    description: "Broadcast to room when a user leaves (FR-005)"
+    payload:
+      type: object
+      properties:
+        roomId:
+          type: integer
+        username:
+          type: string
+        users:
+          type: array
+          items:
+            type: string
+
+  room_left:
+    direction: server_to_client
+    description: "Confirm current user left room"
+    payload:
+      type: object
+      properties:
+        roomId:
+          type: integer
+
+  room_created:
+    direction: server_to_client
+    description: "Confirm room creation"
+    payload:
+      type: object
+      properties:
+        roomId:
+          type: integer
+        name:
+          type: string
+
+  room_deleted:
+    direction: server_to_client
+    description: "Broadcast to all users when a room is deleted"
+    payload:
+      type: object
+      properties:
+        roomId:
+          type: integer
+
+  # Messaging Broadcasts
+  new_message:
+    direction: server_to_client
+    description: "Broadcast new message to all users in room (FR-002)"
+    payload:
+      $ref: "#/components/schemas/Message"
+
+  message_sent:
+    direction: server_to_client
+    description: "Confirm message delivery to sender (FR-012)"
+    payload:
+      type: object
+      properties:
+        messageId:
+          type: integer
+        timestamp:
+          type: integer
+        deliveryStatus:
+          type: string
+          enum: [pending, sent]
+
+  message_failed:
+    direction: server_to_client
+    description: "Notify sender that message delivery failed after retries (FR-019)"
+    payload:
+      type: object
+      properties:
+        content:
+          type: string
+        timestamp:
+          type: integer
+        retryCount:
+          type: integer
+        errorMessage:
+          type: string
+
+  messages_loaded:
+    direction: server_to_client
+    description: "Return paginated message history"
+    payload:
+      type: object
+      properties:
+        roomId:
+          type: integer
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/Message"
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        totalMessages:
+          type: integer
+        hasMore:
+          type: boolean
+
+  # Connection Lifecycle
+  reconnecting:
+    direction: server_to_client
+    description: "Server attempting reconnection (FR-016, FR-025)"
+    payload:
+      type: object
+      properties:
+        attempt:
+          type: integer
+          description: "Reconnection attempt number (max 5)"
+
+  reconnected:
+    direction: server_to_client
+    description: "Reconnection successful"
+    payload:
+      type: object
+      properties:
+        username:
+          type: string
+        currentRoomId:
+          type: integer
+          nullable: true
+
+  reconnect_failed:
+    direction: server_to_client
+    description: "Reconnection failed after 5 attempts (FR-016)"
+    payload:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Unable to reconnect. Please refresh the page."
+
+  # Error Events
+  join_room_error:
+    direction: server_to_client
+    description: "Room join failed"
+    payload:
+      type: object
+      properties:
+        message:
+          type: string
+
+  send_message_error:
+    direction: server_to_client
+    description: "Message send failed"
+    payload:
+      type: object
+      properties:
+        message:
+          type: string
+        retryCount:
+          type: integer
+
+  create_room_error:
+    direction: server_to_client
+    description: "Room creation failed"
+    payload:
+      type: object
+      properties:
+        message:
+          type: string
+
+  delete_room_error:
+    direction: server_to_client
+    description: "Room deletion failed"
+    payload:
+      type: object
+      properties:
+        message:
+          type: string
+
+# ===================================================================
+# Reusable Schemas
+# ===================================================================
+
+components:
+  schemas:
+    Message:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: "Message ID"
+        username:
+          type: string
+          description: "Sender username"
+        content:
+          type: string
+          description: "Message content (sanitized)"
+        timestamp:
+          type: integer
+          description: "Client-provided Unix timestamp (milliseconds)"
+        deliveryStatus:
+          type: string
+          enum: [pending, sent, failed]
+          description: "Delivery status (FR-012)"
+        roomId:
+          type: integer
+          description: "Room ID this message belongs to"
+
+# ===================================================================
+# Event Flow Examples
+# ===================================================================
+
+examples:
+  # Example 1: User authentication and room join
+  user_login_flow:
+    description: "User authenticates and joins a room"
+    steps:
+      - event: authenticate
+        direction: client_to_server
+        payload:
+          username: "alice"
+      - event: authenticated
+        direction: server_to_client
+        payload:
+          username: "alice"
+          userId: 1
+      - event: join_room
+        direction: client_to_server
+        payload:
+          roomId: 1
+      - event: room_joined
+        direction: server_to_client
+        payload:
+          roomId: 1
+          roomName: "general"
+          users: ["alice", "bob"]
+          messages: []
+      - event: user_joined
+        direction: server_to_client
+        broadcast: room
+        payload:
+          roomId: 1
+          username: "alice"
+          users: ["alice", "bob"]
+
+  # Example 2: Send message with delivery confirmation
+  send_message_flow:
+    description: "User sends a message and receives delivery confirmation"
+    steps:
+      - event: send_message
+        direction: client_to_server
+        payload:
+          content: "Hello, world!"
+          timestamp: 1696348800000
+      - event: message_sent
+        direction: server_to_client
+        payload:
+          messageId: 42
+          timestamp: 1696348800000
+          deliveryStatus: "sent"
+      - event: new_message
+        direction: server_to_client
+        broadcast: room
+        payload:
+          id: 42
+          username: "alice"
+          content: "Hello, world!"
+          timestamp: 1696348800000
+          deliveryStatus: "sent"
+          roomId: 1
+
+  # Example 3: Reconnection flow
+  reconnection_flow:
+    description: "User loses connection and reconnects"
+    steps:
+      - event: disconnect
+        direction: server_detects
+      - event: reconnecting
+        direction: server_to_client
+        payload:
+          attempt: 1
+      - event: reconnecting
+        direction: server_to_client
+        payload:
+          attempt: 2
+      - event: reconnected
+        direction: server_to_client
+        payload:
+          username: "alice"
+          currentRoomId: 1
+
+  # Example 4: Room switching (one room at a time)
+  room_switching_flow:
+    description: "User switches from room A to room B (FR-017, FR-018)"
+    steps:
+      - event: join_room
+        direction: client_to_server
+        payload:
+          roomId: 2
+      - event: user_left
+        direction: server_to_client
+        broadcast: room_1
+        payload:
+          roomId: 1
+          username: "alice"
+          users: ["bob"]
+      - event: room_joined
+        direction: server_to_client
+        payload:
+          roomId: 2
+          roomName: "random"
+          users: ["alice", "charlie"]
+          messages: []
+      - event: user_joined
+        direction: server_to_client
+        broadcast: room_2
+        payload:
+          roomId: 2
+          username: "alice"
+          users: ["alice", "charlie"]
