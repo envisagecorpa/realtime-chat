@@ -13,22 +13,29 @@ const RoomService = require('../services/RoomService');
 const MessageService = require('../services/MessageService');
 const PresenceService = require('../services/PresenceService');
 
-// Shared presence service instance
-const presenceService = new PresenceService();
-
 /**
  * Register room event handlers
  * @param {Socket} socket - Socket.IO socket instance
+ * @param {object} deps - Dependencies (roomModel, roomService, presenceService, messageService)
  */
-function roomHandler(socket) {
-  const dbPath = process.env.DB_PATH || ':memory:';
-  const storageService = new StorageService(dbPath);
-  const db = storageService.getDatabase();
+function roomHandler(socket, deps = {}) {
+  // Use injected dependencies or create new ones (for backward compatibility with tests)
+  let roomModel = deps.roomModel;
+  let roomService = deps.roomService;
+  let presenceService = deps.presenceService;
+  let messageService = deps.messageService;
 
-  const roomModel = new Room(db);
-  const messageModel = new Message(db);
-  const roomService = new RoomService(roomModel);
-  const messageService = new MessageService(messageModel);
+  if (!roomModel || !roomService || !presenceService || !messageService) {
+    const dbPath = process.env.DB_PATH || ':memory:';
+    const storageService = new StorageService(dbPath);
+    const db = storageService.getDatabase();
+
+    roomModel = roomModel || new Room(db);
+    const messageModel = new Message(db);
+    roomService = roomService || new RoomService(roomModel);
+    messageService = messageService || new MessageService(messageModel);
+    presenceService = presenceService || new PresenceService();
+  }
 
   /**
    * Handle join_room event

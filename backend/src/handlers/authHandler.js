@@ -15,12 +15,18 @@ const connectedUsers = new Map(); // username (lowercase) → socket.id
 /**
  * Register authentication event handlers
  * @param {Socket} socket - Socket.IO socket instance
+ * @param {object} deps - Dependencies (userModel)
  */
-function authHandler(socket) {
-  const dbPath = process.env.DB_PATH || ':memory:';
-  const storageService = new StorageService(dbPath);
-  const db = storageService.getDatabase();
-  const userModel = new User(db);
+function authHandler(socket, deps = {}) {
+  // Use injected dependencies or create new ones (for backward compatibility with tests)
+  let userModel = deps.userModel;
+
+  if (!userModel) {
+    const dbPath = process.env.DB_PATH || ':memory:';
+    const storageService = new StorageService(dbPath);
+    const db = storageService.getDatabase();
+    userModel = new User(db);
+  }
 
   /**
    * Handle authenticate event

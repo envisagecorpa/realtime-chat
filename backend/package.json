@@ -28,7 +28,8 @@
     "express-session": "^1.17.3",
     "connect-redis": "^7.1.0",
     "redis": "^4.6.5",
-    "dotenv": "^16.0.3"
+    "dotenv": "^16.0.3",
+    "cors": "^2.8.5"
   },
   "devDependencies": {
     "jest": "^29.5.0",

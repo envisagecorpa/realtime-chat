@@ -16,15 +16,23 @@ const VALID_PAGE_SIZES = [50, 100, 200, 500];
 /**
  * Register message event handlers
  * @param {Socket} socket - Socket.IO socket instance
+ * @param {object} deps - Dependencies (messageModel, messageService, userModel)
  */
-function messageHandler(socket) {
-  const dbPath = process.env.DB_PATH || ':memory:';
-  const storageService = new StorageService(dbPath);
-  const db = storageService.getDatabase();
+function messageHandler(socket, deps = {}) {
+  // Use injected dependencies or create new ones (for backward compatibility with tests)
+  let messageModel = deps.messageModel;
+  let messageService = deps.messageService;
+  let userModel = deps.userModel;
 
-  const messageModel = new Message(db);
-  const userModel = new User(db);
-  const messageService = new MessageService(messageModel);
+  if (!messageModel || !messageService || !userModel) {
+    const dbPath = process.env.DB_PATH || ':memory:';
+    const storageService = new StorageService(dbPath);
+    const db = storageService.getDatabase();
+
+    messageModel = messageModel || new Message(db);
+    userModel = userModel || new User(db);
+    messageService = messageService || new MessageService(messageModel);
+  }
 
   /**
    * Handle send_message event
